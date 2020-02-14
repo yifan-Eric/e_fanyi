@@ -1,0 +1,28 @@
+#!/usr/bin/env node
+
+const program = require("commander");
+const chalk = require("chalk");
+const updateNotifier = require("update-notifier");
+const pkg = require("../package.json");
+
+updateNotifier({ pkg }).notify();
+
+program.version(pkg.version);
+
+program.on("--help", function() {
+  console.log("");
+  console.log(chalk.gray("Examples:"));
+  console.log(chalk.cyan("  $ ") + "fanyi word");
+  console.log(chalk.cyan("  $ ") + "fanyi world peace");
+  console.log(chalk.cyan("  $ ") + "fanyi chinglish");
+  console.log("");
+});
+
+program.parse(process.argv);
+
+if (!process.argv.slice(2).length) {
+  program.outputHelp();
+}
+
+const fanyi = require("../main.js");
+fanyi(program.args.join(" "));
