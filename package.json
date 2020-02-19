@@ -1,6 +1,6 @@
 {
   "name": "e_fanyi",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "translate",
   "main": "main.js",
   "scripts": {},
@@ -13,9 +13,9 @@
   "license": "ISC",
   "dependencies": {
     "chalk": "^3.0.0",
+    "cheerio": "^1.0.0-rc.3",
     "commander": "^4.1.1",
     "crypto": "^1.0.1",
-    "node-uuid": "^1.4.8",
     "ora": "^4.0.3",
     "request": "^2.88.2",
     "update-notifier": "^4.0.0"
@@ -23,5 +23,8 @@
   "bin": {
     "fy": "./bin/fanyi",
     "fanyi": "./bin/fanyi"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.2"
   }
 }

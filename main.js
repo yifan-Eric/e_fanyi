@@ -1,8 +1,10 @@
 const request = require("request");
 const qs = require("querystring");
 const crypto = require("crypto");
+const cheerio = require("cheerio");
 const print = require("./print");
 const ora = require("ora");
+const fs = require("fs");
 module.exports = function(word, options, callback) {
   const youdao = function(word) {
     const appKey = "7f786ddf3d41918f"; //应用ID
@@ -11,8 +13,7 @@ module.exports = function(word, options, callback) {
     function getSign(q) {
       const key = "SHuY1zWMRA7SoDryUat91oVGHlfdT6Z4"; //应用密钥
       var len = q.length;
-      let input =
-        len <= 20 ? q : q.substring(0, 10) + len + q.substring(len - 10, len);
+      let input = len <= 20 ? q : q.substring(0, 10) + len + q.substring(len - 10, len);
       let text = appKey + input + salt + curTime + key;
       let d = crypto
         .createHash("sha256")
@@ -41,7 +42,7 @@ module.exports = function(word, options, callback) {
       (error, response, body) => {
         if (!error && response.statusCode == 200) {
           try {
-            print.youdao(word,JSON.parse(body));
+            print.youdao(word, JSON.parse(body));
           } catch (error) {
             console.log("error", error);
           }
@@ -57,7 +58,7 @@ module.exports = function(word, options, callback) {
       (error, response, body) => {
         if (!error && response.statusCode == 200) {
           try {
-            print.iciba(word,JSON.parse(body));
+            print.iciba(word, JSON.parse(body));
           } catch (error) {
             console.log("error", error);
           }
@@ -66,16 +67,33 @@ module.exports = function(word, options, callback) {
       }
     );
   };
-  console.log(" ");
+  const bing = function(word) {
+    request.get(
+      `http://cn.bing.com/dict/search?q=${encodeURIComponent(word)}`,
+      {},
+      (error, response, body) => {
+        if (!error && response.statusCode == 200) {
+          try {
+            print.bing(word, body);
+          } catch (error) {
+            console.log("error", error);
+          }
+        } else {
+        }
+        callbackAll();
+      }
+    );
+  };
   const spinner = ora().start();
   let count = 0;
   const callbackAll = () => {
     count++;
-    if (count >= 2) {
+    if (count >= 3) {
       spinner.stop();
     }
     callback && callback();
   };
   youdao(word);
   iciba(word);
+  bing(word);
 };
