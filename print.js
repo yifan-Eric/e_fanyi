@@ -42,7 +42,7 @@ function fromLog(word, where) {
 }
 function splitLine() {
   log();
-  log(chalk.gray(" -------- "));
+  log(chalk.gray(" ----- 我是一条分割线 --------- "));
 }
 
 exports.youdao = function(word, data) {
@@ -87,12 +87,9 @@ exports.iciba = function(word, data) {
   if (data.sameAnalysis) {
     log();
     data.sameAnalysis.forEach((item, i) => {
-      let str =
-        chalk.gray(i + 1 + ".") +
-        chalk.green(item.part_name) +
-        "  " +
-        chalk.blueBright(item.word_list);
-      log(str);
+      log(
+        chalk.green(item.part_name.match(/(?<=\").*?(?=\")/)) + " -> " + chalk.blueBright(item.word_list)
+      );
     });
   }
   sentenceLog(data.sentence, "Network_en", "Network_cn", word);
@@ -106,8 +103,9 @@ exports.bing = function(word, data) {
   if (symbolEl[0]) {
     symbolEl[0].children.forEach(i => {
       let label = $(".pos", i).text();
-      let value = $(".def>span", i).text();
-      symbolList.push({ label, value });
+      let value = [];
+      $(".def", i)[0].children.forEach(i => value.push($(i).text()));
+      symbolList.push({ label, value: value.join("") });
     });
   }
   let changeBaseEl = $("div.lf_area .hd_div1 .hd_if");
@@ -142,5 +140,27 @@ exports.bing = function(word, data) {
   if (sentenceList && sentenceList.length) {
     sentenceLog(sentenceList, "en", "cn", word);
   }
+  splitLine();
+};
+
+exports.google = function(word, data) {
+  fromLog(word, "translate.google.cn");
+  if (data[0]) {
+    let item = data[0][0];
+    log();
+    log("" + chalk.yellow(item[0]) + chalk.gray("<---->") + chalk.yellow(item[1]));
+    log();
+  }
+  if (data[1]) {
+    data[1].forEach(item => {
+      log(chalk.gray("--- ") + chalk.keyword("orange")(item[0]) + chalk.gray(" --------"));
+      let list = item[2];
+      if (list.length > 4) list.length = 4;
+      list.forEach(_d => {
+        log(chalk.green(_d[0]) + " -> " + chalk.blueBright(_d[1].join(" ")));
+      });
+    });
+  }
+
   splitLine();
 };
