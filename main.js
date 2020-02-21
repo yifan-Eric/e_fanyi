@@ -1,11 +1,9 @@
 const request = require("request");
-const qs = require("querystring");
-const crypto = require("crypto");
-const cheerio = require("cheerio");
 const print = require("./print");
 const ora = require("ora");
-const fs = require("fs");
 let token = require("./src/getTTK");
+const userAgents = require("./data/userAgents");
+
 const timeoutOpt = {
   timeout: 10000
 };
@@ -13,46 +11,21 @@ function isChinese(word) {
   var patrn = /[\u4E00-\u9FA5]|[\uFE30-\uFFA0]/gi;
   return !!patrn.exec(word);
 }
-
 module.exports = function(word, options, callback) {
   const youdao = function(word) {
-    const appKey = "7f786ddf3d41918f"; //应用ID
-    const salt = new Date().getTime();
-    const curTime = Math.round(new Date().getTime() / 1000);
-    function getSign(q) {
-      const key = "SHuY1zWMRA7SoDryUat91oVGHlfdT6Z4"; //应用密钥
-      var len = q.length;
-      let input = len <= 20 ? q : q.substring(0, 10) + len + q.substring(len - 10, len);
-      let text = appKey + input + salt + curTime + key;
-      let d = crypto
-        .createHash("sha256")
-        .update(text)
-        .digest("hex");
-      return d;
-    }
-    const reqData = qs.stringify({
-      q: word,
-      appKey,
-      salt,
-      from: "auto",
-      to: "auto",
-      sign: getSign(word),
-      signType: "v3",
-      curtime: curTime
-    });
-    request.post(
-      "http://openapi.youdao.com/api",
+    let userAgent = userAgents[parseInt(Math.random() * userAgents.length)];
+    request.get(
+      `http://www.youdao.com/w/${encodeURIComponent(word)}`,
       {
         headers: {
-          "Content-Type": "application/x-www-form-urlencoded"
+          "User-Agent": userAgent
         },
-        body: reqData,
         ...timeoutOpt
       },
       (error, response, body) => {
         if (!error && response.statusCode == 200) {
           try {
-            print.youdao(word, JSON.parse(body));
+            print.youdaoHtml(word, body);
           } catch (error) {
             console.log("error", error);
           }
@@ -85,7 +58,6 @@ module.exports = function(word, options, callback) {
         if (!error && response.statusCode == 200) {
           try {
             print.bing(word, body);
-            fs.w
           } catch (error) {
             console.log("error", error);
           }

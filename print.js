@@ -1,6 +1,11 @@
 const chalk = require("chalk");
 const cheerio = require("cheerio");
 const log = console.log;
+function sameLog(list) {
+  list.forEach(item => {
+    log(chalk.green(item.key) + " -> " + chalk.blueBright(item.value));
+  });
+}
 function symbolLog(list, func, exchange) {
   list.forEach(i => {
     log(chalk.gray("~ "), chalk.yellow(func(i)));
@@ -8,7 +13,7 @@ function symbolLog(list, func, exchange) {
   if (exchange && exchange.length) {
     let str = chalk.gray("~ ");
     exchange.forEach(i => {
-      str += " " + chalk.green(i.name) + chalk.blue(i.value);
+      str += " " + chalk.cyanBright(i.name) + chalk.blueBright(i.value);
     });
     log(str);
   }
@@ -67,6 +72,74 @@ exports.youdao = function(word, data) {
   splitLine();
 };
 
+exports.youdaoHtml = function(word, data) {
+  fromLog(word, "youdao.com");
+  let $ = cheerio.load(data);
+  let symbolList = [];
+  let symbolEl = $("#results-contents #phrsListTab .trans-container >ul li");
+  if (symbolEl[0]) {
+    symbolEl.each((index, el) => {
+      symbolList.push($(el).text());
+    });
+  }
+  let exchangeList = [];
+  let exchangeEl = $("#results-contents #phrsListTab .trans-container .additional");
+  if (exchangeEl[0]) {
+    let text = $(exchangeEl[0])
+      .text()
+      .replace(/[\n\r\[\]]/g, "");
+    text = text.split(" ").filter(i => i);
+    text.forEach((i, index) => {
+      if (index % 2 == 0) {
+        exchangeList.push({ name: i + " ", value: text[index + 1] });
+      }
+    });
+  }
+  let sameAnalysis = [];
+  let sameAnalysisEl = $("#synonyms > ul");
+  if (sameAnalysisEl[0]) {
+    let el = sameAnalysisEl[0];
+    let liList = $("li", el)
+      .map((i, _el) => $(_el).text())
+      .get();
+    let pList = $(".wordGroup", el)
+      .map((i, _el) => {
+        return $("span", _el)
+          .map((i, sEl) =>
+            $(sEl)
+              .text()
+              .replace(/[\n\r\t]| {3,}/g, "")
+          )
+          .get()
+          .join("");
+      })
+      .get();
+    sameAnalysis = liList.map((item, index) => ({ key: item, value: pList[index] }));
+  }
+  let sentenceList = [];
+  let sentenceEl = $("#results-contents #bilingual >ul>li");
+  if (sentenceEl[0]) {
+    sentenceEl.each((index, el) => {
+      let en = $($("p:nth-child(1)", el)[0])
+        .text()
+        .replace(/[\n\r\t]| {3,}/g, "");
+      let cn = $($("p:nth-child(2)", el)[0])
+        .text()
+        .replace(/[\n\r\t]| {3,}/g, "");
+      sentenceList.push({ en, cn });
+    });
+  }
+  symbolLog(symbolList, i => i, exchangeList);
+  if (sameAnalysis && sameAnalysis.length) {
+    log();
+    sameLog(sameAnalysis);
+  }
+  if (sentenceList && sentenceList.length) {
+    sentenceLog(sentenceList, "en", "cn", word);
+  }
+  splitLine();
+};
+
 exports.iciba = function(word, data) {
   fromLog(word, "iciba.com");
   const baesInfo = data.baesInfo;
@@ -86,11 +159,11 @@ exports.iciba = function(word, data) {
   }
   if (data.sameAnalysis) {
     log();
-    data.sameAnalysis.forEach((item, i) => {
-      log(
-        chalk.green(item.part_name.match(/(?<=\").*?(?=\")/)) + " -> " + chalk.blueBright(item.word_list)
-      );
-    });
+    let list = data.sameAnalysis.map(item => ({
+      key: item.part_name.match(/(?<=\").*?(?=\")/),
+      value: item.word_list
+    }));
+    sameLog(list);
   }
   sentenceLog(data.sentence, "Network_en", "Network_cn", word);
   splitLine();

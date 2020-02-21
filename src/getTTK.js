@@ -71,7 +71,7 @@ function updateTKK() {
     } else {
       request.get("https://translate.google.cn", {}, (error, response, body) => {
         if (!error && response.statusCode == 200) {
-          var code = body.match(d.match(/(?<=tkk:\').*?(?=\')/));
+          var code = body.match(/(?<=tkk:\').*?(?=\')/);
           if(code){
             fs.writeFileSync(path.join(__dirname + "/../data/tkk.txt"), code[0]);
             window.TKK = code[0];
