@@ -142,7 +142,8 @@ exports.youdaoHtml = function(word, data) {
 
 exports.iciba = function(word, data) {
   fromLog(word, "iciba.com");
-  const baesInfo = data.baesInfo;
+  let message = data.message || {};
+  const baesInfo = message.baesInfo || {};
   //symbol
   if (baesInfo.symbols) {
     let exchangeList = [];
@@ -157,15 +158,16 @@ exports.iciba = function(word, data) {
     }
     symbolLog(baesInfo.symbols[0].parts, i => i.part + i.means.join(" "), exchangeList);
   }
-  if (data.sameAnalysis) {
+  if (message.sameAnalysis) {
     log();
-    let list = data.sameAnalysis.map(item => ({
+    let list = message.sameAnalysis.map(item => ({
       key: item.part_name.match(/(?<=\").*?(?=\")/),
       value: item.word_list
     }));
     sameLog(list);
   }
-  sentenceLog(data.sentence, "Network_en", "Network_cn", word);
+  let sentence = message.new_sentence && message.new_sentence[0].sentences || [];
+  sentenceLog(sentence, "en", "cn", word);
   splitLine();
 };
 

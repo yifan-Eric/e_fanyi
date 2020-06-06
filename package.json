@@ -1,6 +1,6 @@
 {
   "name": "e_fanyi",
-  "version": "1.0.3",
+  "version": "1.0.5",
   "description": "translate",
   "main": "main.js",
   "scripts": {},
@@ -16,6 +16,7 @@
     "cheerio": "^1.0.0-rc.3",
     "commander": "^4.1.1",
     "crypto": "^1.0.1",
+    "md5": "^2.2.1",
     "ora": "^4.0.3",
     "request": "^2.88.2",
     "update-notifier": "^4.0.0"

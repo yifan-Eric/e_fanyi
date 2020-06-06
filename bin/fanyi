@@ -9,12 +9,13 @@ updateNotifier({ pkg }).notify();
 
 program.version(pkg.version);
 
+program.option("-s, --sentence", "translate sentence");
 program.on("--help", function() {
   console.log("");
   console.log(chalk.gray("Examples:"));
   console.log(chalk.cyan("  $ ") + "fanyi word");
-  console.log(chalk.cyan("  $ ") + "fanyi world peace");
-  console.log(chalk.cyan("  $ ") + "fanyi chinglish");
+  console.log(chalk.cyan("  $ ") + "fanyi world");
+  console.log(chalk.cyan("  $ ") + "fanyi -s how are you");
   console.log("");
 });
 
@@ -22,7 +23,13 @@ program.parse(process.argv);
 
 if (!process.argv.slice(2).length) {
   program.outputHelp();
+  return;
 }
 
-const fanyi = require("../main.js");
-fanyi(program.args.join(" "));
+if (program.sentence) {
+  // translate sentence
+} else {
+  // translate word
+  const fanyi = require("../main.js");
+  fanyi(program.args.join(" "));
+}
